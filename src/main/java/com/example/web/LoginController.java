@@ -15,73 +15,25 @@
  */
 package com.example.web;
 
-import java.util.Optional;
+import java.security.Principal;
 
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.example.model.CustomUserDetails;
-
-@Controller
+@RestController
+@RequestMapping("main")
 public class LoginController {
 
-    @RequestMapping("/")
-    public String root() {
-        return "redirect:/index";
-    }
+	public static final Logger logger = LoggerFactory.getLogger(LoginController.class);
 
-    @RequestMapping("/index")
-    public String index(Model model) {
-        getLoggedInUsername().ifPresent(f -> {
-            model.addAttribute("userName", f);
-        });
-        getTenantName().ifPresent(d -> {
-            model.addAttribute("tenantName", d);
-        });
-
-        return "index";
-    }
-
-    @RequestMapping("/user/index")
-    public String userIndex(Model model) {
-        getLoggedInUsername().ifPresent(f -> {
-            model.addAttribute("userName", f);
-        });
-        getTenantName().ifPresent(d -> {
-            model.addAttribute("tenantName", d);
-        });
-        return "user/index";
-    }
-
-    @RequestMapping("/login")
-    public String login() {
-        return "login";
-    }
-
-    private Optional<String> getLoggedInUsername() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String userName = null;
-        if (auth != null && !auth.getClass().equals(AnonymousAuthenticationToken.class)) {
-            // User user = (User) auth.getPrincipal();
-            CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
-            userName = userDetails.getUsername();
-        }
-
-        return Optional.ofNullable(userName);
-    }
-
-    private Optional<String> getTenantName() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String tenantName = null;
-        if (auth != null && !auth.getClass().equals(AnonymousAuthenticationToken.class)) {
-            // User user = (User) auth.getPrincipal();
-            CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
-            tenantName = userDetails.getTenant();
-        }
-        return Optional.ofNullable(tenantName);
-    }
+	// this is the login api/service
+	@CrossOrigin
+	@RequestMapping("/login")
+	public Principal user(Principal principal) {
+		logger.info("user logged "+principal);
+		return principal;
+	}
 }

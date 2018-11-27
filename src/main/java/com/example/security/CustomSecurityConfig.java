@@ -29,6 +29,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 /**
  * Configuration of security related beans and methods. The access to different
@@ -45,6 +48,21 @@ public class CustomSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private CustomUserDetailsService userDetailsService;
+    
+
+	// this configuration allow the client app to access the this api 
+	// all the domain that consume this api must be included in the allowed o'rings 
+	@SuppressWarnings("deprecation")
+	@Bean
+	public WebMvcConfigurer corsConfigurer() {
+	    return new WebMvcConfigurerAdapter() {
+	        @Override
+	        public void addCorsMappings(CorsRegistry registry) {
+	            registry.addMapping("/**").allowedOrigins("http://localhost:4200").allowedMethods("GET", "POST");
+	          
+	        }
+	    };
+	}
 
     /**
      * This is where access to various resources (urls) in the application is
@@ -53,18 +71,19 @@ public class CustomSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         //@formatter:off
-        http
+        http.cors().and()
             .addFilterBefore(authenticationFilter(), UsernamePasswordAuthenticationFilter.class)
             .authorizeRequests()
-                .antMatchers("/css/**", "/index").permitAll()
+                .antMatchers("/css/**", "/main/login", "/logout").permitAll()
                 .antMatchers("/user/**").authenticated()
             .and()
-            .formLogin().loginPage("/login")
+            .formLogin().loginPage("/main/login")
             .and()
             .logout()
             .logoutUrl("/logout");
        //@formatter:on 
     }
+ 
 
     /**
      * Create an instance of the custom authentication filter which intercepts and
@@ -112,7 +131,7 @@ public class CustomSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     public SimpleUrlAuthenticationSuccessHandler successHandler() {
-        return new SimpleUrlAuthenticationSuccessHandler("/user/index");
+        return new SimpleUrlAuthenticationSuccessHandler("/home");
     }
 
     @Bean(name = "passwordEncoder")
